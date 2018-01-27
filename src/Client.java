@@ -1,16 +1,25 @@
+import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 import java.util.Stack;
+
+import javax.imageio.ImageIO;
 
 public class Client {
 
@@ -38,14 +47,28 @@ public class Client {
 
 			if (verifyIP(IPAddress) && verifyPort(port)){
 				clientSocket = new Socket(IPAddress, port);
-				login(objectOutput, objectInput, clientSocket, user, pass);
-				/*objectOutput = new ObjectOutputStream(clientSocket.getOutputStream());
-				objectOutput.writeObject(user);
-				objectOutput.writeObject(pass);
-				objectOutput.flush();
-				objectInput = new ObjectInputStream(clientSocket.getInputStream());
-				String login = (String) obj.readObject();
-				System.out.println("Login is: " + login);*/
+				if (login(objectOutput, objectInput, clientSocket, user, pass)){
+					// si login marche, on procede a l'envoie de l'image au serveur
+					System.out.println("ENVOIE IMAGE AU SERVEUR...");
+					OutputStream outputStream = clientSocket.getOutputStream();
+					BufferedImage image = ImageIO.read(new File("lassonde.jpg"));
+					ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+			        ImageIO.write(image, "jpg", byteArrayOutputStream);
+			        byte[] sizeO = ByteBuffer.allocate(4).putInt(byteArrayOutputStream.size()).array();
+			        outputStream.write(sizeO);
+			        outputStream.write(byteArrayOutputStream.toByteArray());
+			        outputStream.flush();
+			        
+			        InputStream inputStream = clientSocket.getInputStream();
+			        byte[] sizeAr = new byte[4];
+			        inputStream.read(sizeAr);
+			        int sizeI = ByteBuffer.wrap(sizeAr).asIntBuffer().get();
+			        byte[] imageAr = new byte[sizeI];
+			        inputStream.read(imageAr);
+			        BufferedImage newImage = ImageIO.read(new ByteArrayInputStream(imageAr));
+			        ImageIO.write(newImage, "jpg", new File("lassondeSobel.jpg"));
+				}
+
 				// Ici, on suppose que le fichier que vous voulez inverser se nomme text.txt
 				/*List<String> linesToSend = readFile("text.txt");
 				// Écriture de l'objet à envoyer dans le output stream. Attention, la fonction
