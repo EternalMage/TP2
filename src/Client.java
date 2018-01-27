@@ -18,6 +18,8 @@ public class Client {
 
 		Socket clientSocket = null;
 		Scanner sc = new Scanner(System.in);
+		ObjectOutputStream objectOutput = null;
+		ObjectInputStream objectInput = null;
 
 		try {
 			// Création d'un socket client vers le serveur. Ici 127.0.0.1 est indicateur que
@@ -30,20 +32,20 @@ public class Client {
 			int port = sc.nextInt();
 			sc.nextLine();
 			System.out.println("Enter user: ");
-		    String user = sc.nextLine();
-		    System.out.println("Enter pass: ");
-		    String pass = sc.nextLine();
-		    
+			String user = sc.nextLine();
+			System.out.println("Enter pass: ");
+			String pass = sc.nextLine();
+
 			if (verifyIP(IPAddress) && verifyPort(port)){
 				clientSocket = new Socket(IPAddress, port);
-				ObjectOutputStream objectOutput = new ObjectOutputStream(clientSocket.getOutputStream());
+				login(objectOutput, objectInput, clientSocket, user, pass);
+				/*objectOutput = new ObjectOutputStream(clientSocket.getOutputStream());
 				objectOutput.writeObject(user);
 				objectOutput.writeObject(pass);
 				objectOutput.flush();
-				
-				ObjectInputStream obj = new ObjectInputStream(clientSocket.getInputStream());
+				objectInput = new ObjectInputStream(clientSocket.getInputStream());
 				String login = (String) obj.readObject();
-				System.out.println("Login is: " + login);
+				System.out.println("Login is: " + login);*/
 				// Ici, on suppose que le fichier que vous voulez inverser se nomme text.txt
 				/*List<String> linesToSend = readFile("text.txt");
 				// Écriture de l'objet à envoyer dans le output stream. Attention, la fonction
@@ -129,8 +131,20 @@ public class Client {
 			return true;
 		}
 		else {
-		System.out.println("Port is not valid (not between 5000 and 5050)");
+			System.out.println("Port is not valid (not between 5000 and 5050)");
 			return false;
 		}
+	}
+	
+	public static boolean login(ObjectOutputStream objectOutput, ObjectInputStream objectInput, Socket clientSocket, String user, String pass) throws IOException, ClassNotFoundException{
+		objectOutput = new ObjectOutputStream(clientSocket.getOutputStream());
+		objectOutput.writeObject(user);
+		objectOutput.writeObject(pass);
+		objectOutput.flush();
+		
+		objectInput = new ObjectInputStream(clientSocket.getInputStream());
+		Boolean boolLogin = (Boolean) objectInput.readObject();
+		System.out.println("Login is: " + boolLogin);
+		return boolLogin;	
 	}
 }
