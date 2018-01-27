@@ -70,41 +70,6 @@ public class Client {
 		}
 	}
 
-	// Fonction permettant de lire un fichier et de stocker son contenu dans une liste.
-	private static List<String> readFile(String nomFichier) throws IOException {
-		List<String> listOfLines = new ArrayList<String>();
-		String line = null;
-		FileReader fileReader = null;
-		BufferedReader bufferedReader = null;
-		try {
-			fileReader = new FileReader(nomFichier);
-
-			bufferedReader = new BufferedReader(fileReader);
-
-			while ((line = bufferedReader.readLine()) != null) {
-				listOfLines.add(line);
-			}
-		} finally {
-			fileReader.close();
-			bufferedReader.close();
-		}
-		return listOfLines;
-	}
-
-	// Fonction permettant d'écrire dans un fichier les données contenues dans la
-	// stack reçu du serveur.
-	private static void writeToFile(Stack<String> myStack, String nomFichier) throws IOException {
-		BufferedWriter out = null;
-		try {
-			out = new BufferedWriter(new FileWriter(nomFichier));
-			while (!myStack.isEmpty()) {
-				out.write(myStack.pop() + "\n");
-			}
-		} finally {
-			out.close();
-		}
-	}
-
 	public static boolean verifyIP(String ip) {
 		//check if ip is valid
 		System.out.println(ip);
