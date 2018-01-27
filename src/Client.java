@@ -77,7 +77,6 @@ public class Client {
 
 	public static boolean verifyIP(String ip) {
 		//check if ip is valid
-		System.out.println(ip);
 		String ipArray[] = ip.split("\\.");
 		boolean IPisValid = true;
 		if (ipArray.length < 5) {
@@ -114,20 +113,24 @@ public class Client {
 		
 		objectInput = new ObjectInputStream(clientSocket.getInputStream());
 		Boolean boolLogin = (Boolean) objectInput.readObject();
-		System.out.println("Login is: " + boolLogin);
+		if (!boolLogin)
+			System.out.println("Erreur dans la saisie du mot de passe.");
 		return boolLogin;	
 	}
 	
 	public static void convertImage(Socket clientSocket) throws IOException{
-		System.out.println("ENVOIE IMAGE AU SERVEUR...");
+		Scanner sc = new Scanner(System.in);
+		System.out.println("Entrez le nom de l'image: ");
+		String imageName = sc.nextLine();
 		OutputStream outputStream = clientSocket.getOutputStream();
-		BufferedImage image = ImageIO.read(new File("lassonde.jpg"));
+		BufferedImage image = ImageIO.read(new File(imageName));
 		ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         ImageIO.write(image, "jpg", byteArrayOutputStream);
         byte[] sizeO = ByteBuffer.allocate(4).putInt(byteArrayOutputStream.size()).array();
         outputStream.write(sizeO);
         outputStream.write(byteArrayOutputStream.toByteArray());
         outputStream.flush();
+        System.out.println("L'image est envoyé...");
         
         InputStream inputStream = clientSocket.getInputStream();
         byte[] sizeAr = new byte[4];
@@ -137,5 +140,6 @@ public class Client {
         inputStream.read(imageAr);
         BufferedImage newImage = ImageIO.read(new ByteArrayInputStream(imageAr));
         ImageIO.write(newImage, "jpg", new File("lassondeSobel.jpg"));
+        System.out.println("L'image traitée recue...");
 	}
 }
