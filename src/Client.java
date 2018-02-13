@@ -23,6 +23,8 @@ import javax.imageio.ImageIO;
 
 public class Client {
 
+	private static String username;
+	
 	public static void main(String[] args) throws UnknownHostException, IOException, ClassNotFoundException {
 
 		Socket clientSocket = null;
@@ -31,9 +33,6 @@ public class Client {
 		ObjectInputStream objectInput = null;
 
 		try {
-			// Création d'un socket client vers le serveur. Ici 127.0.0.1 est indicateur que
-			// le serveur s'exécute sur la machine locale. Il faut changer 127.0.0.1 pour
-			// l'adresse IP du serveur si celui-ci ne s'exécute pas sur la même machine.
 			//System.out.println("Entrez une adresse IP: ");
 			//String IPAddress = sc.nextLine();
 			String IPAddress = "127.0.0.1"; // A ENLEVERRRRRRRRRRRRRRRRRRRRRR
@@ -41,32 +40,15 @@ public class Client {
 			int port = sc.nextInt();
 			sc.nextLine();
 			System.out.println("Enter user: ");
-			String user = sc.nextLine();
+			username = sc.nextLine();
 			System.out.println("Enter pass: ");
 			String pass = sc.nextLine();
 
 			if (verifyIP(IPAddress) && verifyPort(port)){
 				clientSocket = new Socket(IPAddress, port);
-				if (login(objectOutput, objectInput, clientSocket, user, pass)){
+				if (login(objectOutput, objectInput, clientSocket, username, pass)){
 					convertImage(clientSocket);
 				}
-
-				// Ici, on suppose que le fichier que vous voulez inverser se nomme text.txt
-				/*List<String> linesToSend = readFile("text.txt");
-				// Écriture de l'objet à envoyer dans le output stream. Attention, la fonction
-				// writeObject n'envoie pas l'objet vers le serveur! Elle ne fait qu'écrire dans
-				// le output stream.
-				objectOutput.writeObject(linesToSend);
-				// Envoi des lignes du fichier texte vers le serveur sous forme d'une liste.
-				objectOutput.flush();
-				// Création du input stream, pour recevoir les données traitées du serveur.
-				ObjectInputStream obj = new ObjectInputStream(clientSocket.getInputStream());
-				@SuppressWarnings("unchecked")
-				// Noté bien que la fonction readObject est bloquante! Ainsi, l'exécution du
-				// client s'arrête jusqu'à la réception du résultat provenant du serveur!
-				Stack<String> receivedStack = (Stack<String>) obj.readObject();
-				// Écriture du résultat dans un fichier nommée FichierInversee.txt
-				writeToFile(receivedStack, "FichierInversee.txt");*/
 			}
 		} finally {
 			// Fermeture du socket.
@@ -120,8 +102,16 @@ public class Client {
 	
 	public static void convertImage(Socket clientSocket) throws IOException{
 		Scanner sc = new Scanner(System.in);
-		System.out.println("Entrez le nom de l'image: ");
+		System.out.println("Entrez le nom de l'image (n'oubliez pas de mettre .jpg): ");
 		String imageName = sc.nextLine();
+		System.out.println("Entrez le nom pour la nouvelle image (n'oubliez pas de mettre .jpg): ");
+		String newImageName = sc.nextLine();
+		
+		ObjectOutputStream objectO = new ObjectOutputStream(clientSocket.getOutputStream());
+		objectO.writeObject(username);
+		objectO.writeObject(imageName);
+		objectO.flush();
+		
 		OutputStream outputStream = clientSocket.getOutputStream();
 		BufferedImage image = ImageIO.read(new File(imageName));
 		ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
@@ -139,7 +129,8 @@ public class Client {
         byte[] imageAr = new byte[sizeI];
         inputStream.read(imageAr);
         BufferedImage newImage = ImageIO.read(new ByteArrayInputStream(imageAr));
-        ImageIO.write(newImage, "jpg", new File("lassondeSobel.jpg"));
-        System.out.println("L'image traitée recue...");
+        File f = new File(newImageName);
+        ImageIO.write(newImage, "jpg", f );
+        System.out.println("L'image traitée recue... (Location: " + f.getAbsolutePath() + ")");
 	}
 }
